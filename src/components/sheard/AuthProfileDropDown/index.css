@@ -1,0 +1,7 @@
+.user_profile_avatar{
+    cursor: pointer;
+}
+.profile_dropdown_container{
+    background-color: white;
+    border-radius: 12px;
+}
