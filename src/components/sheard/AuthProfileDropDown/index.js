@@ -7,7 +7,17 @@ import './index.css'
 
 const { useToken } = theme
 const { Text } = Typography
-const AuthProfileDropDown = () => {
+
+const getFullNameLatter  = ({firstName, lastName}) => {
+   if(firstName && lastName) {
+      return `${firstName[0]} ${lastName[0]}`
+   }
+   return '-'
+}
+
+const AuthProfileDropDown = ({ userProfileInfo }) => {
+      console.log(userProfileInfo,'AuthProfileDropDown');
+
    const { token } = useToken( )
    const  navigate = useNavigate()
 
@@ -50,8 +60,8 @@ const items = [
              >
                <Flex vertical align="center" style={{padding:token.sizeMS}}>
                   <Avatar src="https://www.google.com/url?sa=i&url=https%3A%2F%2Fpngtree.com%2Fso%2Favatar&psig=AOvVaw03xcevuWqoibuyjV53sPzD&ust=1729352039164000&source=images&cd=vfe&opi=89978449&ved=0CBAQjRxqFwoTCKj67ZKhmIkDFQAAAAAdAAAAABAE"/>
-                  <Text>John Smith</Text>
-                  <Text type="secondary" underline>johnsmith@gmail.com</Text>
+                  <Text>{userProfileInfo.firstName} {userProfileInfo.lastName} </Text>
+                  <Text type="secondary" underline >{userProfileInfo.email}</Text>
                </Flex>
                {menu}
             </div>
@@ -59,7 +69,7 @@ const items = [
         }}
         >
           <Avatar size={"large"} className="user_profile_avatar">
-            J S
+          {getFullNameLatter(userProfileInfo)}
           </Avatar>
         </Dropdown>
      )

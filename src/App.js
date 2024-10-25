@@ -3,10 +3,11 @@ import { Login, Register } from './pages/auth';
 import MainLayout from './components/layouts/Main';
 import Profile from './pages/profile';
 import LoadingWrapper from './components/sheard/LoadingWrapper';
+import { getDoc, doc } from 'firebase/firestore';
 import { RouterProvider, createBrowserRouter, createRoutesFromElements, Route, Navigate } from 'react-router-dom';
 import Cabinet from './pages/cabinet';
-import { ROUTE_CONSTANTS } from './core/utils/constants';
-import { auth } from './services/firbase';
+import { ROUTE_CONSTANTS,FIRESTORE_PATH_NAMES } from './core/utils/constants';
+import { auth, db } from './services/firbase';
 import { onAuthStateChanged } from 'firebase/auth';
 import { AuthContext } from './context/authContext';
 import './styles/global.css';
@@ -15,10 +16,22 @@ import './styles/global.css';
 const App = () => {
   const [isAuth, setIsAuth] = useState(false);
   const [loading, setLoading] = useState(true)
+  const [userProfileInfo, setUserProfileInfo] = useState({})
+
+  const handleGetUsersData = async(uid) => {
+    const docRef = doc(db,FIRESTORE_PATH_NAMES.REGISTERED_USERS,uid)
+    const response = await getDoc(docRef) 
+    
+    if (response.exists()) {
+      setUserProfileInfo(response.data())
+    }
+  }
 
   useEffect(() => {
 
     onAuthStateChanged(auth, (user) => {
+     user?.uid && handleGetUsersData(user.uid)
+ 
       setLoading(false)
       setIsAuth(Boolean(user));
     });
@@ -27,7 +40,7 @@ const App = () => {
   }, []);
 
     return (
-      <AuthContext.Provider value={{isAuth, x:10}}>
+      <AuthContext.Provider value={{isAuth, userProfileInfo}}>
       <LoadingWrapper loading={loading}>
         <RouterProvider
           router={

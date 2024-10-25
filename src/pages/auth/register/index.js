@@ -2,11 +2,13 @@ import React, { useState } from 'react';
 import { createUserWithEmailAndPassword } from 'firebase/auth';
 import { Form, Button, Input, Flex } from 'antd';
 import { auth, db } from '../../../services/firbase';
-import { setDoc, doc  } from 'firebase/firestore';
-import { regexpValidation, ROUTE_CONSTANTS } from '../../../core/utils/constants';
+import { setDoc, doc,   } from 'firebase/firestore';
+import { regexpValidation, ROUTE_CONSTANTS, FIRESTORE_PATH_NAMES } from '../../../core/utils/constants';
 import AuthWrapper from '../../../components/sheard/AuthWrapper';
 import { Link, useNavigate } from 'react-router-dom';
 import registerBanner from '../../../core/images/auth-register.jpg';
+
+
 const Register = () => {
   const [loading, setLoading] = useState(false);
   const [form] =  Form.useForm();
@@ -18,7 +20,7 @@ const Register = () => {
     try {
       const response = await createUserWithEmailAndPassword(auth, email, password);
       const {uid} = response.user
-      const createdDoc = doc(db,'registeredUsers',uid)
+      const createdDoc = doc(db,FIRESTORE_PATH_NAMES.REGISTERED_USERS,uid)
       await setDoc(createdDoc, {
         uid,firstName,lastName,email
       })
