@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react';
 import { Login, Register } from './pages/auth';
 import MainLayout from './components/layouts/Main';
+import Cabinetlayout from './components/layouts/Cabinet';
 import Profile from './pages/profile';
 import LoadingWrapper from './components/sheard/LoadingWrapper';
 import { getDoc, doc } from 'firebase/firestore';
@@ -49,8 +50,19 @@ const App = () => {
                   <Route path="/" element={<MainLayout />}>
                     <Route path={ROUTE_CONSTANTS.LOGIN} element={ isAuth ? <Navigate to={ROUTE_CONSTANTS.CABINET}/> : <Login setIsAuth={setIsAuth}/>}/>
                     <Route path={ROUTE_CONSTANTS.REGISTER} element={isAuth ? <Navigate to={ROUTE_CONSTANTS.CABINET} /> : <Register />}/>
-                    <Route path={ROUTE_CONSTANTS.CABINET} element={isAuth ? <Cabinet /> : <Navigate to={ROUTE_CONSTANTS.LOGIN}/>}/>
-                    <Route path={ROUTE_CONSTANTS.PROFILE} element={isAuth? <Profile /> : <Navigate to={ROUTE_CONSTANTS.LOGIN}/>}/>
+                    
+                    
+                    <Route
+                    path={ROUTE_CONSTANTS.CABINET}
+                    element={isAuth ? <Cabinetlayout/> : <Navigate to={ROUTE_CONSTANTS.LOGIN}/>}
+                    >
+
+                    <Route
+                     path={ROUTE_CONSTANTS.PROFILE}
+                     element={<Profile />}
+                     />
+
+                    </Route>
                   </Route>
                 )
               )
