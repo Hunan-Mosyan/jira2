@@ -1,176 +1,114 @@
-import React, { useEffect, useState } from 'react'
-import {Button, Form, Input,  notification, Tag } from "antd"
-import  {db} from "../../services/firbase"
-import { doc,  updateDoc } from 'firebase/firestore' // edit enq anum datan basaum
-
-
-
-import "./index.css"
-import { FIRESTORE_PATH__NAMES } from '../../core/constants/constants'
-import {useDispatch, useSelector} from "react-redux";
-import {fetchUserProfileInfo} from "../../state-management/slices/userProfile";
-
-
+import { useEffect, useState } from 'react';
+import { Form, Input, Button, notification, Upload } from 'antd';
+import { doc, updateDoc } from 'firebase/firestore'
+import { db } from '../../services/firbase';
+import { FIRESTORE_PATH_NAMES } from '../../core/utils/constants';
+import { useDispatch, useSelector } from 'react-redux';
+import { fetchUserProfileInfo } from '../../state-managment/slices/userProfile';
+import ImgUpload from '../../components/sheard/ImgUpload';
+import './index.css';
 const Profile = () => {
+  const dispatch = useDispatch();
+  const { authUserInfo: { userData } } = useSelector((store) => store.userProfile);
+  const [ form ] = Form.useForm();
+  const [ buttonLoading, setButtonLoading ] = useState(false);
+  const { uid, ...restData } = userData;
 
-    const dispatch = useDispatch() ////////
-    const {authUserInfo: {userData}} = useSelector(store=> store.userProfile); /////////
+  useEffect(() => {
+    form.setFieldsValue(restData);
+  }, [form, restData]);
 
-// const {userProfileInfo, handleGetUserData} = useContext(AuthContext)
-const [form] = Form.useForm()
-const [loading, setLoading] = useState(false)
-const {uid, ...restData} = userData /////
-
-
-const {name, lastname, email, position, status} = userData ///////
-
-
-useEffect(()=>{
-  form.setFieldsValue(restData)
-  // setImageUrl(image); // set image
-  }, [restData, form])
-  
-  
-
-const handleEditUserProfile = async (values)=>{
-  setLoading(true)
- try{
-  // console.log(values)
-
-  const  userDocRef = doc(db, FIRESTORE_PATH__NAMES.REGISTERED_USERS, uid )
-
-
-  const updatedValues = { ...values  };  ///
-
-
-  await updateDoc(userDocRef, updatedValues)
-dispatch(fetchUserProfileInfo)
-  notification.success({
-    message: "User Information successfully updated"
-  })
- }catch(e){
-  console.log(e)
-  notification.error({
-    message: " Error :( "
-  })
- }finally{
-  setLoading(false)
- }
-
-}
-
-
+  const handleEditUserProfile = async (values) => {
+    setButtonLoading(true);
+    try {
+      const userDocRef = doc(db, FIRESTORE_PATH_NAMES.REGISTERED_USERS, uid);
+      await updateDoc(userDocRef, values);
+      // dispatch(fetchUserProfileInfo())
+      notification.success({
+        message: 'User data successfully updated'
+      });
+    } catch (error) {
+      notification.error({
+        message: 'Error :('
+      });
+    } finally {
+      setButtonLoading(false);
+    }
+  }
 
   return (
-<div className='ProfileContainer'>
+    <div className="form_page_container">
 
-
-
-<h2>User Profile</h2>
-
-<div className="ProfileVisualPart">
-        <div>
-            <img
-                src={ "https://png.pngtree.com/png-vector/20220807/ourmid/pngtree-man-avatar-wearing-gray-suit-png-image_6102786.png"}
-                alt="sts"
-            />
-        </div>
-        <div className="VisualProfPart">
-
-                <h1>{name} {lastname}</h1>
-                <h4>{position}</h4>
-            <Tag className="tagStatus" color="magenta">{status}</Tag>
-                <span>{email}</span>
-
-        </div>
-    </div>
-
-<Form className="formCont" layout='vertical' form={form} onFinish={handleEditUserProfile}>
+      <Form layout="vertical" form={form} onFinish={handleEditUserProfile}>
+        <Form.Item
+          label="Profile Image"
+        >
+          <ImgUpload />
+        </Form.Item>
 
         <Form.Item
-            label="Firstname"
-            name="name"
-            rules={[
-                {
-                    required: true,
-                    message: "Please input your first name!",
-                },
-            ]}
-
+          label="First Name"
+          name="firstName"
+          rules={[
+            {
+              required: true,
+              message: 'Please input your First Name!'
+            }
+          ]}
         >
-            <Input placeholder='Firstname'/>
-</Form.Item>
+          <Input
+            placeholder="First Name"
+          />
+        </Form.Item>
 
-<Form.Item
-label="LastName"
-rules={[
-  {
-    required: true,
-    message: "Please input your Last name!",
-  },
-]}
-name="lastname"
->
-<Input placeholder='LastName' />
-</Form.Item>
+        <Form.Item
+          label="Last Name"
+          name="lastName"
+          rules={[
+            {
+              required: true,
+              message: 'Please input your Last Name!'
+            }
+          ]}
+        >
+          <Input
+            placeholder="Last Name"
+          />
+        </Form.Item>
 
-<Form.Item
-label="Email"
-name="email"
->
-<Input readOnly placeholder='Email' />
-</Form.Item>
+        <Form.Item
+          label="Email"
+          name="email"
+        >
+          <Input
+            readOnly
+            placeholder="Email"
+          />
 
-<Form.Item
-label="Phone Number"
-name="phonenumber"
-rules={[
-  {
-    required: true,
-    message: "Please input your Phone Number!",
-  },
-]}
->
-<Input placeholder='Position' />
-</Form.Item>
+        </Form.Item>
 
-<Form.Item
-label="Position"
-name="position"
-rules={[
-  {
-    required: true,
-    message: "Please input your Position in Company!",
-  },
-]}
->
-<Input placeholder='Position' />
-</Form.Item>
+        <Form.Item
+          label="Phone Number"
+          name="phoneNumber"
+          rules={[
+            {
+              required: true,
+              message: 'Please input your Phone Number!'
+            }
+          ]}
+        >
+          <Input
+            placeholder="Phone Number"
+          />
 
-<Form.Item
-label="Gender"
-name="gender"
-rules={[
-  {
-    required: true,
-    message: "Please input your gender male, female or ... !",
-  },
-]}
->
-<Input placeholder='Gender male, female ....' />
-</Form.Item>
+        </Form.Item>
 
-    <Form.Item
-        label="Work Status"
-        name="status"
-    >
-        <Input placeholder='Status..on Work, Vacation ...' />
-    </Form.Item>
-
-<Button loading={loading} type='primary' htmlType='submit'>Submit</Button>
-</Form>
-</div>
+        <Button type="primary" htmlType="submit" loading={buttonLoading}>
+          Submit
+        </Button>
+      </Form>
+    </div>
   )
-}
+};
 
-export default Profile
+export default Profile;
