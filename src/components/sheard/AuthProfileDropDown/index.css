@@ -1,6 +1,7 @@
-.user_profile_avatar {
-    cursor: pointer;
+.user_profile_avatar{
+cursor: pointer;
 }
-.profile_dropdown_container {
+
+.profile_dropdown_container{
     width: 200px;
 }

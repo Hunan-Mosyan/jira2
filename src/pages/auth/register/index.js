@@ -1,137 +1,114 @@
-import React, { useState } from 'react';
-import { createUserWithEmailAndPassword } from 'firebase/auth';
-import { Form, Button, Input, Flex } from 'antd';
-import { auth, db } from '../../../services/firbase';
-import { regexpValidation, ROUTE_CONSTANTS, FIRESTORE_PATH_NAMES } from '../../../core/utils/constants';
-import { setDoc, doc } from 'firebase/firestore';
-import AuthWrapper from '../../../components/sheard/AuthWrapper';
-import { Link, useNavigate } from 'react-router-dom';
-import registerBanner from '../../../core/images/auth-register.jpg';
+import React, { useState }  from "react";
+import { createUserWithEmailAndPassword } from "firebase/auth";
+import { auth, db } from "../../../services/firebase";
+import { Form, Button, Input, Flex, notification } from 'antd';
+import { Link, useNavigate } from "react-router-dom";
+import { ROUTE_CONSTANTS, FIRESTORE_PATH_NAMES, regexpValidation } from "../../../core/utilis/constants";
+import AuthWrapper from "../../../components/sheard/AuthWrapper";
+import RegisterBanner from "../../../core/Imgs/auth-register.jpg"
+import { setDoc, doc } from "firebase/firestore";
 
+const Register= () => {
+    const [ form ] = Form.useForm();
+    const [ loading, setLoading ] = useState( false );
+    const navigate = useNavigate();
 
-const Register = () => {
-  const [loading, setLoading] = useState(false);
-  const [form] =  Form.useForm();
-  const navigate = useNavigate();
+    const handleRegister = async values => {
+        setLoading(true);
+        const { firstName, lastName, email, password } = values;
+        try{
+            const response = await createUserWithEmailAndPassword( auth, email, password );
+            const { uid } = response.user;
+            const createDoc = doc(db, FIRESTORE_PATH_NAMES.REGISTERED_USERS, uid);
+            await setDoc(createDoc, {
+                uid, firstName, lastName, email
+            });
 
-  const handleRegister =  async values => {
-    setLoading(true);
-    const { firstName, lastName, email, password } = values;
-    try {
-      const response = await createUserWithEmailAndPassword(auth, email, password);
-      const { uid } = response.user;
-      const createdDoc = doc(db, FIRESTORE_PATH_NAMES.REGISTERED_USERS, uid);
-      await setDoc(createdDoc, {
-        uid, firstName, lastName, email
-      });
+            form.resetFields();
+            navigate(ROUTE_CONSTANTS.LOGIN);
+        }catch(error){
+            notification.error({
+                message:'Invalid Register Credentials'
+            })
+        }finally{
+            setLoading(false);
+        };
+    };
 
-      navigate(ROUTE_CONSTANTS.LOGIN);
-    }catch (e) {
-      console.log(e);
-    } finally {
-      setLoading(false)
-    }
-  }
-
-  return (
-    <AuthWrapper title="Sign up" banner={registerBanner}>
-      <Form layout="vertical" form={form} onFinish={handleRegister}>
-        <Form.Item
-          label="First Name"
-          name="firstName"
-          rules={[
-            {
-              required: true,
-              message: 'Please input your First Name!'
-            }
-          ]}
-        >
-          <Input type="text" placeholder="First Name"/>
-        </Form.Item>
-
-        <Form.Item
-          label="Last Name"
-          name="lastName"
-          rules={[
-            {
-              required: true,
-              message: 'Please input your Last Name!'
-            }
-          ]}
-        >
-          <Input type="text" placeholder="Last Name"/>
-        </Form.Item>
-
-        <Form.Item
-          label="Email"
-          name="email"
-          rules={[
-            {
-              required: true,
-              message: 'Please input your Email!'
-            }
-          ]}
-        >
-          <Input type="email" placeholder="Email"/>
-        </Form.Item>
-
-        <Form.Item
-          label="Password"
-          name="password"
-          tooltip="Passwrord must be min 6 max 16 characters ....."
-          rules={[
-            {
-              required: true,
-              message: 'Please input your password!'
+    return (
+        <AuthWrapper title='Sign up' banner={RegisterBanner}>
+        <Form onFinish={ handleRegister } layout='vertical' form={ form }>
+            <Form.Item
+            label='First name'
+            name='firstName'
+            rules={[{
+                required:true,
+                message:'Please input your first name'
+            }]}
+            >
+            <Input type='text' placeholder="First name"></Input>
+            </Form.Item>
+            <Form.Item
+            label='Last name'
+            name='lastName'
+            rules={[{
+                required:true,
+                message:'Please input your last name'
+            }]}
+            >
+            <Input type='text' placeholder="Last name"></Input>
+            </Form.Item>
+            <Form.Item
+            label='Email'
+            name='email'
+            rules={[{
+                required:true,
+                message:'Please input your email'
+            }]}
+            >
+            <Input type='email' placeholder="Email"></Input>
+            </Form.Item>
+            <Form.Item
+            label='Password'
+            name='password'
+            rules={[{
+                required:true,
+                message:'Please input your password'
             },
             {
-              pattern: regexpValidation,
-              message: 'Wrong password'
+                pattern:regexpValidation,
+                message:'The password must contain at least 6 to 16 characters, including at least one digit and one special character (e.g., !, @, #, $, %, ^, &, *).'
             }
-          ]}
-        >
-          <Input.Password placeholder="Password"/>
-        </Form.Item>
-
-        <Form.Item
-          label="Config Password"
-          name="confirm"
-          dependencies={['password']}
-          rules={[
-            {
-              required: true,
-              message: 'Please input your password!'
+        ]}
+            >
+            <Input.Password placeholder="Password"/>
+            </Form.Item>
+            <Form.Item
+            label='Confirm Password'
+            name='confirm'
+            dependencies={['password']}
+            rules={[{
+                required:true,
+                message:'Please input your password'
             },
             ({ getFieldValue }) => ({
-              validator(_, value) {
-                if(!value || getFieldValue('password') === value) {
-                  return Promise.resolve();
+                validator(_,value){
+                if(!value||value===getFieldValue('password')){
+                    return Promise.resolve();
                 }
+                return Promise.reject(new Error('The new password that you entered does not match'));
+                }
+            })]}
+            >
+            <Input.Password placeholder="Config Password"></Input.Password>
+            </Form.Item>
+            <Flex align="center" justify="flex-end" gap={'10px'}>
+            <Button type='primary' htmlType="submit" loading={ loading }>Sign up</Button>
+            <Link to={ROUTE_CONSTANTS.LOGIN}>Sign in</Link>
+            </Flex>
+        </Form>
+        </AuthWrapper>
+    )
+};
 
-                return Promise.reject(new Error('The new password that you entered do not match!!!'));
-              }
-            })
-          ]}
-        >
-          <Input.Password placeholder="Config Password"/>
-        </Form.Item>
-
-        <Flex align="flex-end" gap="10px" justify="flex-end">
-          <Link to={ROUTE_CONSTANTS.LOGIN}>
-            Sign in
-          </Link>
-          <Button type="primary" htmlType="submit" loading={loading}>
-            Sign up
-          </Button>
-        </Flex>
-
-      </Form>
-    </AuthWrapper>
-  )
-}
 export default Register;
-
-
-
-
-
